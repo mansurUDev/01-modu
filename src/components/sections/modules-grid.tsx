@@ -1,5 +1,5 @@
+import { AddToCartButton } from "@/components/cart/add-to-cart-button";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/ui/product-card";
 import { CATALOG } from "@/data/catalog";
 import { formatPrice } from "@/lib/format";
@@ -13,7 +13,7 @@ import { Container, Eyebrow, Section } from "./section-shell";
  *
  * Nothing here hard-codes a price or a product name: everything comes
  * from data/catalog.ts through formatPrice, so the catalogue stays the
- * single source of truth. The Add button is inert until T6 wires the cart.
+ * single source of truth.
  */
 export function ModulesGrid() {
   return (
@@ -43,7 +43,7 @@ export function ModulesGrid() {
                   <Badge variant="accent">{sku.badge}</Badge>
                 ) : undefined
               }
-              action={<Button size="sm">Add to cart</Button>}
+              action={<AddToCartButton skuId={sku.id} />}
             />
           ))}
         </div>

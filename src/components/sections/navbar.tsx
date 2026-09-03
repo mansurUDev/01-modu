@@ -1,6 +1,8 @@
 "use client";
 
+import { CartBadge } from "@/components/cart/cart-badge";
 import { IconButton } from "@/components/ui/icon-button";
+import { useUiStore } from "@/store/ui";
 import { Container } from "./section-shell";
 
 /**
@@ -36,6 +38,8 @@ function CartIcon() {
 }
 
 export function Navbar() {
+  const openCart = useUiStore((s) => s.openCart);
+
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-stroke bg-[rgba(10,10,11,0.72)] backdrop-blur-[12px]">
       <Container className="flex h-19 items-center justify-between gap-6">
@@ -59,9 +63,12 @@ export function Navbar() {
           ))}
         </nav>
 
-        <IconButton label="Your deck">
-          <CartIcon />
-        </IconButton>
+        <span className="relative shrink-0">
+          <IconButton label="Your deck" onClick={openCart}>
+            <CartIcon />
+          </IconButton>
+          <CartBadge />
+        </span>
       </Container>
     </header>
   );
