@@ -1,4 +1,5 @@
 import { CartDrawer } from "@/components/cart/cart-drawer";
+import { Grain } from "@/components/grain";
 import { Faq } from "@/components/sections/faq";
 import { Footer } from "@/components/sections/footer";
 import { Hero } from "@/components/sections/hero";
@@ -43,6 +44,9 @@ export default function Home() {
         </main>
         <Footer />
       </div>
+
+      {/* Above the page, below the header and the overlays. */}
+      <Grain />
 
       <CartDrawer />
     </>

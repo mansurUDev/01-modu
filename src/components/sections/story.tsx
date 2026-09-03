@@ -32,8 +32,9 @@ import { Container, Eyebrow } from "./section-shell";
  * timeline across the section.
  *
  * Scene 1 renders visible so the section is never blank before JS runs;
- * the rest start transparent on desktop only (`lg:opacity-0`) and the
- * timeline takes them from there.
+ * the rest start hidden on desktop only and the timeline takes them from
+ * there — hidden rather than merely transparent, so they are out of the
+ * tab order too.
  *
  * The timeline writes to the DOM directly and holds no React state: a
  * scrubbed pin fires on every frame, and re-rendering eight scenes plus a
@@ -62,8 +63,13 @@ export function Story() {
           const fill = root.current?.querySelector<HTMLElement>("[data-rail-fill]");
           const dots = gsap.utils.toArray<HTMLElement>("[data-rail-dot]");
 
-          gsap.set(scenes, { opacity: 0, yPercent: 100 });
-          gsap.set(scenes[0], { opacity: 1, yPercent: 0 });
+          // autoAlpha, not opacity: it pairs opacity with `visibility`,
+          // so a scene at 0 leaves the tab order instead of parking an
+          // invisible "Build your deck" link in it for keyboard users to
+          // land on seven scenes early. GSAP restores visibility as soon
+          // as opacity leaves 0, in both scrub directions.
+          gsap.set(scenes, { autoAlpha: 0, yPercent: 100 });
+          gsap.set(scenes[0], { autoAlpha: 1, yPercent: 0 });
 
           const master = gsap.timeline({
             scrollTrigger: {
@@ -121,7 +127,7 @@ export function Story() {
             if (i > 0) {
               master.to(
                 el,
-                { opacity: 1, yPercent: 0, duration: FADE, ease: "power2.out" },
+                { autoAlpha: 1, yPercent: 0, duration: FADE, ease: "power2.out" },
                 scene.at,
               );
             }
@@ -130,7 +136,7 @@ export function Story() {
             if (!isLast) {
               master.to(
                 el,
-                { opacity: 0, yPercent: -100, duration: FADE, ease: "power2.in" },
+                { autoAlpha: 0, yPercent: -100, duration: FADE, ease: "power2.in" },
                 scene.until,
               );
             }
@@ -183,7 +189,9 @@ export function Story() {
                 // reduced motion gets scenes hidden by CSS and no timeline
                 // to ever reveal them.
                 className={`flex max-w-[46ch] flex-col gap-4 lg:motion-safe:absolute lg:motion-safe:inset-x-0 lg:motion-safe:top-0 ${
-                  i > 0 ? "lg:motion-safe:opacity-0" : ""
+                  // invisible as well as transparent, so a scene is out
+                  // of the tab order even before the timeline has run.
+                  i > 0 ? "lg:motion-safe:invisible lg:motion-safe:opacity-0" : ""
                 }`}
               >
                 {/* The still of this scene's 3D pose, for everyone the

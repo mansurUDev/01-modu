@@ -183,3 +183,22 @@ body {
     color: var(--color-heading);
   }
 }
+
+@layer base {
+  /*
+   * Chrome paints its own near-white fill behind an autofilled input and
+   * refuses to let `background-color` override it — on a dark form that
+   * turns a filled field into a white slab with white text in it. The
+   * inset shadow is the standard way through: it is drawn on top of that
+   * fill, and the huge transition delay keeps Chrome from animating back
+   * to its colour on focus.
+   */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--color-heading);
+    -webkit-box-shadow: 0 0 0 1000px var(--color-raised) inset;
+    caret-color: var(--color-heading);
+    transition: background-color 100000s ease-in-out 0s;
+  }
+}

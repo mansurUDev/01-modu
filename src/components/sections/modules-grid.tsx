@@ -1,4 +1,5 @@
 import { AddToCartButton } from "@/components/cart/add-to-cart-button";
+import { TiltField } from "@/components/interactions/tilt-field";
 import { Badge } from "@/components/ui/badge";
 import { ProductCard } from "@/components/ui/product-card";
 import { CATALOG } from "@/data/catalog";
@@ -29,24 +30,30 @@ export function ModulesGrid() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {CATALOG.map((sku) => (
-            <ProductCard
-              key={sku.id}
-              category={sku.category}
-              name={sku.name}
-              description={sku.description}
-              price={formatPrice(sku.price)}
-              image={sku.image}
-              badge={
-                sku.badge ? (
-                  <Badge variant="accent">{sku.badge}</Badge>
-                ) : undefined
-              }
-              action={<AddToCartButton skuId={sku.id} />}
-            />
-          ))}
-        </div>
+        {/* The only client code in this section: it installs the pointer
+            tilt on the cards below and leaves the grid itself on the
+            server. */}
+        <TiltField>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {CATALOG.map((sku) => (
+              <div key={sku.id} data-tilt>
+                <ProductCard
+                  category={sku.category}
+                  name={sku.name}
+                  description={sku.description}
+                  price={formatPrice(sku.price)}
+                  image={sku.image}
+                  badge={
+                    sku.badge ? (
+                      <Badge variant="accent">{sku.badge}</Badge>
+                    ) : undefined
+                  }
+                  action={<AddToCartButton skuId={sku.id} />}
+                />
+              </div>
+            ))}
+          </div>
+        </TiltField>
       </Container>
     </Section>
   );

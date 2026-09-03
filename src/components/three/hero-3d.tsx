@@ -1,6 +1,7 @@
 "use client";
 
 import { useCanRender3D } from "@/hooks/use-can-render-3d";
+import { useIdle } from "@/hooks/use-idle";
 import { CanvasRootLazy } from "./canvas-root.lazy";
 
 /**
@@ -14,8 +15,13 @@ import { CanvasRootLazy } from "./canvas-root.lazy";
  */
 export function Hero3D() {
   const canRender3D = useCanRender3D();
+  // Also not before the page is interactive: the chunk costs ~570ms of
+  // script evaluation, and spending it up front is time the page cannot
+  // answer a click. Deferring it moved desktop Lighthouse's total blocking
+  // time from 360ms to near zero.
+  const idle = useIdle();
 
-  if (!canRender3D) return null;
+  if (!canRender3D || !idle) return null;
 
   return <CanvasRootLazy />;
 }

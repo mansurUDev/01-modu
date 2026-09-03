@@ -295,6 +295,10 @@ export default function CanvasRoot() {
     <Canvas
       className="!fixed inset-0 z-0"
       style={{ pointerEvents: "none" }}
+      // Decorative: the deck is described in the copy beside it, and the
+      // posters carry the alt text. Nothing here is content a screen
+      // reader should try to announce.
+      aria-hidden="true"
       gl={{ alpha: true }}
       dpr={[1, 2]}
       camera={HERO_CAMERA}

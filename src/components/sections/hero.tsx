@@ -1,3 +1,4 @@
+import { Magnetic } from "@/components/interactions/magnetic";
 import { Poster } from "@/components/poster";
 import { ButtonLink } from "@/components/ui/button";
 import { Container } from "./section-shell";
@@ -35,12 +36,16 @@ export function Hero() {
         </p>
 
         <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
-          <ButtonLink href="#modules" size="lg">
-            Build your deck
-          </ButtonLink>
-          <ButtonLink href="#story" size="lg" variant="secondary">
-            See how it works
-          </ButtonLink>
+          <Magnetic>
+            <ButtonLink href="#modules" size="lg">
+              Build your deck
+            </ButtonLink>
+          </Magnetic>
+          <Magnetic>
+            <ButtonLink href="#story" size="lg" variant="secondary">
+              See how it works
+            </ButtonLink>
+          </Magnetic>
         </div>
 
         {/* Where the live canvas does not run, the product still has to be

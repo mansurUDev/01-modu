@@ -1,36 +1,132 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MODU
 
-## Getting Started
+A product site for a modular desk controller that does not exist. Eight
+scroll-driven scenes take a 3D deck apart, walk through each module, and
+snap it back together; a working cart, sign-in gate and checkout sit under
+it. Static export, no backend, no external requests at runtime.
 
-First, run the development server:
+**Live:** _deploying — see T12_
+
+![The MODU hero: the deck rendered live in WebGL behind the headline](docs/01-hero.webp)
+
+---
+
+## What it does
+
+**The scroll story.** One GSAP timeline drives eight chapters over 900vh.
+GSAP never touches a mesh — it tweens numbers on a plain object, and a
+`useFrame` loop lerps the scene toward them. That indirection is what makes
+scrubbing backwards land on exactly the same frame as scrubbing forwards,
+and it is what lets reduced motion read the same values with no timeline
+at all.
+
+| | |
+|---|---|
+| ![The deck coming apart into four modules](docs/02-story-apart.webp) | ![The screen module waking up mid-story](docs/03-story-screen.webp) |
+
+**The shop.** Eight SKUs, three of them kits. Every price, name and
+discount comes from one catalogue file in cents; nothing is written into
+JSX. Add to cart opens the drawer, checkout raises a sign-in gate, and the
+order lands on a confirmation page with an SVG animation.
+
+| | |
+|---|---|
+| ![The catalogue: eight product cards with 3D renders](docs/04-catalogue.webp) | ![The cart drawer showing a kit discount](docs/05-cart.webp) |
+| ![The sign-in gate](docs/06-auth.webp) | ![Checkout with a sticky order summary](docs/07-checkout.webp) |
+
+![The order confirmation page](docs/08-success.webp)
+
+---
+
+## Stack
+
+- **Next.js 16** (App Router) with `output: 'export'` — the whole site is
+  static HTML on a CDN
+- **React 19**, **TypeScript**, **Tailwind CSS v4** (CSS-first `@theme`, no
+  config file)
+- **React Three Fiber / three.js** for the deck, built from primitives —
+  no model files to download
+- **GSAP** + **ScrollTrigger** for the timeline, **Lenis** for smooth
+  scrolling
+- **Zustand** + `persist` for cart, session and orders
+
+## Why there is no backend
+
+This is a portfolio piece, and a backend would have added running costs and
+a second thing to keep alive without making the front end any better. What
+a shop actually needs from a server — a catalogue, a session, an order —
+is faked honestly instead:
+
+- The catalogue is a typed module. It is the only source of prices, and
+  the totals are computed from it in cents.
+- Sign-in accepts any well-formed email and any password of six characters
+  or more. **The password is validated and thrown away** — there is no
+  field for it in the store, so nothing lands in `localStorage`.
+- Placing an order writes a snapshot to `localStorage` and a token to
+  `sessionStorage`, which is what guards the confirmation page against
+  being opened directly.
+
+Every screen tells the visitor this is a demo rather than pretending
+otherwise.
+
+## Running it
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+```bash
+npm run build && npx serve out
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The build emits a fully static `out/`. There is no server component of any
+kind at runtime.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Notes on how it is built
 
-## Learn More
+**The 3D never reaches a phone.** The capability check runs *before* the
+canvas component is rendered, not inside it, so below 1024px or under
+`prefers-reduced-motion` the three.js chunk is never requested at all.
+Those visitors get stills captured from the same 3D scene at the same
+poses, so the fallback is the same product from the same angle rather than
+a separate illustration that drifts out of date.
 
-To learn more about Next.js, take a look at the following resources:
+**The GPU sleeps.** The canvas is fixed and stays mounted for the whole
+page, but an IntersectionObserver drops the render loop to `demand` once
+the hero and the story are both off screen — zero frames drawn while you
+read the spec sheet.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Zero external requests.** Fonts are self-hosted through `next/font`, the
+environment lighting is built in-scene from `Lightformer`s rather than
+fetching an HDR, and there is no CDN script anywhere. Load the page with
+the network panel open and every request is same-origin.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Two micro-interactions, deliberately.** Cards lean toward the pointer and
+the hero CTAs are magnetic. Both are behind
+`(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)`,
+so a touch device and anyone who asked for less motion get neither.
 
-## Deploy on Vercel
+## Known limitations
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Cart state does not sync between tabs.** Each tab hydrates its own
+  store from `localStorage` on load; two open tabs will drift apart until
+  one of them is reloaded.
+- **Orders live in the browser.** Clearing site data clears the order
+  history, and it never existed anywhere else.
+- **The confirmation page is guarded by `sessionStorage`,** so it survives
+  a reload but not a new tab — which is the intent, not a bug.
+- **The 3D deck is modelled, not scanned.** Dimensions come from the
+  reference render, so it reads as the product without being a CAD-accurate
+  one.
+- **The three.js chunk is around 255KB gzipped**, over the 180KB the spec
+  hoped for. It is lazy and desktop-only, so it never touches the critical
+  path; shrinking it would mean giving up the environment lighting.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Credits
+
+Design system, mockups and the reference 3D render were generated with
+Claude Design and ported by hand; the specification, build plan and review
+notes live outside this repository.
+
+MODU is a fictional product. Nothing here is for sale.

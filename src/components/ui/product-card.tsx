@@ -1,4 +1,3 @@
-import Image from "next/image";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
 import { QuantityStepper } from "./quantity-stepper";
@@ -18,10 +17,11 @@ import { QuantityStepper } from "./quantity-stepper";
  *   a quantity stepper. With no `action` the stepper still renders, so
  *   the original contract keeps working — the stepper's real home is the
  *   cart drawer, where quantities are edited.
- * - `<img>` -> next/image with `fill`, since the card knows its media box
- *   but not the render's aspect ratio. Optimisation is off globally
- *   (next.config.ts, static export), so this is a plain <img> at runtime
- *   with the layout guarantees next/image adds.
+ * - The render is a plain <img> with a hand-written srcset. Optimisation
+ *   is off globally (next.config.ts, static export), so next/image would
+ *   emit this same tag and drop the srcset on the way — and these files
+ *   are shot at the media box's own 5:3, so `object-cover` fills it with
+ *   no letterboxing and no guessing at aspect ratios.
  */
 
 export type ProductCardProps = {
@@ -32,7 +32,11 @@ export type ProductCardProps = {
   description: string;
   /** Preformatted price string — build it with lib/format.ts. */
   price: string;
-  /** Product render URL; omit for the abstract module placeholder. */
+  /**
+   * 1x product render URL; omit for the abstract module placeholder. The
+   * 2x file is expected beside it under the same name with a `-2x` suffix
+   * — one convention rather than a second prop to keep in step.
+   */
   image?: string;
   /** Corner badge, e.g. a "Save $19" <Badge/>. */
   badge?: ReactNode;
@@ -43,8 +47,9 @@ export type ProductCardProps = {
   className?: string;
 };
 
-/** Stand-in render: an abstract anodised module, used until T10 ships
- *  real screenshots of the R3F scene. */
+/** Stand-in for a SKU with no render yet: an abstract anodised module.
+ *  Every catalogue entry ships one now, so this is the contract's
+ *  fallback rather than something the site renders. */
 function ModulePlaceholder() {
   return (
     <div
@@ -82,12 +87,17 @@ export function ProductCard({
       <div className="relative flex h-[170px] items-center justify-center border-b border-stroke bg-[var(--vignette)]">
         {badge && <div className="absolute top-3 left-3 z-10">{badge}</div>}
         {image ? (
-          <Image
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
             src={image}
+            srcSet={`${image} 600w, ${image.replace(/\.webp$/, "-2x.webp")} 1200w`}
+            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
             alt={name}
-            fill
-            sizes="(min-width: 1024px) 25vw, 100vw"
-            className="object-contain p-6"
+            width={600}
+            height={360}
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover"
           />
         ) : (
           <ModulePlaceholder />

@@ -36,13 +36,18 @@ export type Sku = {
   includes?: SkuId[];
   /** Small corner badge text, e.g. "Save $19". Absent on standalone modules. */
   badge?: string;
-  /** Product render path; omitted until T10 fills in real renders/screenshots. */
+  /**
+   * 1x product render in public/products/. The matching `-2x` file is
+   * derived from this path by the catalogue grid, so the two always move
+   * together.
+   */
   image?: string;
 };
 
 export const CATALOG: readonly Sku[] = [
   {
     id: "dial",
+    image: "/products/dial.webp",
     name: "MODU Dial",
     category: "Module · Encoder",
     description:
@@ -51,6 +56,7 @@ export const CATALOG: readonly Sku[] = [
   },
   {
     id: "keys",
+    image: "/products/keys.webp",
     name: "MODU Keys",
     category: "Module · Keys",
     description:
@@ -59,6 +65,7 @@ export const CATALOG: readonly Sku[] = [
   },
   {
     id: "voice",
+    image: "/products/voice.webp",
     name: "MODU Voice",
     category: "Module · Recorder",
     description:
@@ -67,6 +74,7 @@ export const CATALOG: readonly Sku[] = [
   },
   {
     id: "fader",
+    image: "/products/fader.webp",
     name: "MODU Fader",
     category: "Module · Fader",
     description:
@@ -75,6 +83,7 @@ export const CATALOG: readonly Sku[] = [
   },
   {
     id: "view",
+    image: "/products/view.webp",
     name: "MODU View",
     category: "Module · Display",
     description:
@@ -83,6 +92,7 @@ export const CATALOG: readonly Sku[] = [
   },
   {
     id: "starter-kit",
+    image: "/products/starter-kit.webp",
     name: "Starter Kit",
     category: "Kit · 2 modules",
     description: "Dial + Keys. The two modules everyone starts with.",
@@ -93,6 +103,7 @@ export const CATALOG: readonly Sku[] = [
   },
   {
     id: "creator-kit",
+    image: "/products/creator-kit.webp",
     name: "Creator Kit",
     category: "Kit · 4 modules",
     description: "Dial, Fader, Keys and View. A full deck for editing days.",
@@ -103,6 +114,7 @@ export const CATALOG: readonly Sku[] = [
   },
   {
     id: "studio-kit",
+    image: "/products/studio-kit.webp",
     name: "Studio Kit",
     category: "Kit · 5 modules",
     description: "Every module we make, in one box. The whole desk, sorted.",
