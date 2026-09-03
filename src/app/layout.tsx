@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { AppInit } from "@/components/app-init";
 import { AuthModal } from "@/components/auth/auth-modal";
+import { SmoothScroll } from "@/components/smooth-scroll";
 import { inter, jetbrainsMono, spaceGrotesk } from "./fonts";
 import "./globals.css";
 
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body>
         <AppInit />
+        <SmoothScroll />
         {children}
         {/* Lives in the layout because the gate is raised from two places:
             the cart drawer on / and the guard on /checkout. */}

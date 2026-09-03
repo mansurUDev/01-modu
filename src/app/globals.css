@@ -10,6 +10,37 @@
 @import "../styles/tokens/spacing.css";
 @import "../styles/tokens/shape.css";
 
+/* Lenis' own stylesheet, inlined rather than imported from node_modules
+   so the whole cascade stays visible in one file. Copied verbatim from
+   lenis/dist/lenis.css — the `lenis-stopped` rule is what actually locks
+   the page while an overlay is open. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis:not(.lenis-autoToggle).lenis-stopped {
+  overflow: clip;
+}
+
+.lenis [data-lenis-prevent],
+.lenis [data-lenis-prevent-wheel],
+.lenis [data-lenis-prevent-touch],
+.lenis [data-lenis-prevent-vertical],
+.lenis [data-lenis-prevent-horizontal] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+.lenis.lenis-autoToggle {
+  transition-property: overflow;
+  transition-duration: 1ms;
+  transition-behavior: allow-discrete;
+}
+
 /* Anti-FOUC (TZ.md §10 / REVIEW.md §1 "Палитра" — text color corrected to
    #F2F1EE, the TZ.md snippet has a stale #F5F5F4).  This must be the very
    first real CSS below the mandatory `@import "tailwindcss"` line — dark is
