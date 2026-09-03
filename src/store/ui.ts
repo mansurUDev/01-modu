@@ -14,8 +14,16 @@ type UiState = {
   openCart: () => void;
   closeCart: () => void;
 
+  /** Set while an order is being placed: clearing the cart would
+   *  otherwise trip /checkout's empty-cart guard and bounce the user
+   *  home mid-navigation. */
+  orderPlaced: boolean;
+  setOrderPlaced: (value: boolean) => void;
+
   authOpen: boolean;
-  openAuth: () => void;
+  /** Where to go once the gate is passed; null means "just close". */
+  authRedirect: string | null;
+  openAuth: (redirectTo?: string) => void;
   closeAuth: () => void;
 };
 
@@ -24,7 +32,12 @@ export const useUiStore = create<UiState>()((set) => ({
   openCart: () => set({ cartOpen: true }),
   closeCart: () => set({ cartOpen: false }),
 
+  orderPlaced: false,
+  setOrderPlaced: (value) => set({ orderPlaced: value }),
+
   authOpen: false,
-  openAuth: () => set({ authOpen: true }),
-  closeAuth: () => set({ authOpen: false }),
+  authRedirect: null,
+  openAuth: (redirectTo) =>
+    set({ authOpen: true, authRedirect: redirectTo ?? null }),
+  closeAuth: () => set({ authOpen: false, authRedirect: null }),
 }));

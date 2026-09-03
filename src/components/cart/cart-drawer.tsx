@@ -45,7 +45,7 @@ export function CartDrawer() {
       router.push("/checkout");
       return;
     }
-    openAuth();
+    openAuth("/checkout");
   };
 
   return (

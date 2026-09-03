@@ -25,8 +25,10 @@ export type ModalProps = {
   /** Optional uppercase mono eyebrow above the title, in accent. */
   eyebrow?: string;
   children?: ReactNode;
-  /** Primary action label; omit for a dismiss-only modal. */
+  /** Primary action label; omit when the content supplies its own submit. */
   confirmLabel?: string;
+  /** Replaces the default action row entirely (e.g. a form's own button). */
+  footer?: ReactNode;
   cancelLabel?: string;
   onConfirm?: () => void;
   onClose?: () => void;
@@ -53,6 +55,7 @@ export function Modal({
   eyebrow,
   children,
   confirmLabel,
+  footer,
   cancelLabel = "Cancel",
   onConfirm,
   onClose,
@@ -105,14 +108,18 @@ export function Modal({
 
         <div className="font-body text-sm leading-[1.6] text-body">{children}</div>
 
-        {(confirmLabel || onClose) && (
-          <div className="mt-2 flex justify-end gap-2.5">
-            <Button variant="secondary" onClick={onClose}>
-              {cancelLabel}
-            </Button>
-            {confirmLabel && <Button onClick={onConfirm}>{confirmLabel}</Button>}
-          </div>
-        )}
+        {/* A lone Cancel next to the X is noise, so the default action row
+            only appears when there is a real primary action. Content with
+            its own submit passes `footer` instead. */}
+        {footer ??
+          (confirmLabel && (
+            <div className="mt-2 flex justify-end gap-2.5">
+              <Button variant="secondary" onClick={onClose}>
+                {cancelLabel}
+              </Button>
+              <Button onClick={onConfirm}>{confirmLabel}</Button>
+            </div>
+          ))}
       </div>
     </div>,
     document.body,
