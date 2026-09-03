@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { AppInit } from "@/components/app-init";
 import { inter, jetbrainsMono, spaceGrotesk } from "./fonts";
 import "./globals.css";
 
@@ -23,7 +24,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable} antialiased`}
     >
-      <body>{children}</body>
+      <body>
+        <AppInit />
+        {children}
+      </body>
     </html>
   );
 }
