@@ -1,23 +1,47 @@
+import { Faq } from "@/components/sections/faq";
+import { Footer } from "@/components/sections/footer";
+import { Hero } from "@/components/sections/hero";
+import { ModulesGrid } from "@/components/sections/modules-grid";
+import { Navbar } from "@/components/sections/navbar";
+import { Reviews } from "@/components/sections/reviews";
+import { Specs } from "@/components/sections/specs";
+import { Story } from "@/components/sections/story";
 import { Hero3D } from "@/components/three/hero-3d";
 
-// Placeholder — real landing sections land in T5 (see ../../BUILD_PLAN.md).
-// T3 wires the live deck in behind it so the scene can be reviewed on its own.
+/**
+ * Stays a server component — it only composes sections, so the whole page
+ * is prerendered into the static export and the client bundle only pays
+ * for the pieces that actually need interactivity (TZ.md Часть B §1).
+ *
+ * <Hero3D/> renders a fixed, full-viewport canvas behind everything (and
+ * nothing at all below 1024px or under reduced-motion), which is why the
+ * content sits in its own stacking context above it.
+ */
 export default function Home() {
   return (
     <>
       <Hero3D />
-      <main className="relative z-10 flex min-h-svh flex-col items-center justify-end gap-4 px-6 pb-16 text-center">
-        <p className="font-mono text-mono-label uppercase tracking-[0.12em] text-muted">
-          MODU
-        </p>
-        <h1 className="font-display text-h1 text-heading">
-          The controller you build.
-        </h1>
-        <p className="max-w-md text-body">
-          Landing sections come in T5. The deck above is the live R3F scene
-          from T3.
-        </p>
-      </main>
+      <Navbar />
+
+      <div className="relative z-10">
+        <main>
+          {/* Hero and story sit ON the canvas — it is their backdrop. */}
+          <Hero />
+          <Story />
+
+          {/* From the catalogue down the page rides over the canvas on an
+              opaque background, which is what DESIGN.md Часть B §1 means by
+              "#modules наезжает поверх канваса". T8 additionally fades the
+              canvas to a 15% ghost once the story timeline ends. */}
+          <div className="relative bg-background">
+            <ModulesGrid />
+            <Specs />
+            <Reviews />
+            <Faq />
+          </div>
+        </main>
+        <Footer />
+      </div>
     </>
   );
 }

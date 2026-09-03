@@ -1,6 +1,6 @@
 "use client";
 
-import type { ButtonHTMLAttributes } from "react";
+import type { AnchorHTMLAttributes, ButtonHTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
 
 /**
@@ -43,6 +43,22 @@ const VARIANTS = {
   ),
 } as const;
 
+const BASE = cn(
+  "inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border",
+  "font-display font-semibold leading-none tracking-[0.01em] select-none",
+  "transition-[background-color,box-shadow,border-color,color] duration-150",
+  "focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none",
+  "disabled:cursor-not-allowed disabled:opacity-45",
+);
+
+function buttonClasses(
+  variant: keyof typeof VARIANTS,
+  size: keyof typeof SIZES,
+  className?: string,
+) {
+  return cn(BASE, SIZES[size], VARIANTS[variant], className);
+}
+
 export function Button({
   variant = "primary",
   size = "md",
@@ -54,16 +70,27 @@ export function Button({
     <button
       {...rest}
       type={type}
-      className={cn(
-        "inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border",
-        "font-display font-semibold leading-none tracking-[0.01em] select-none",
-        "transition-[background-color,box-shadow,border-color,color] duration-150",
-        "focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none",
-        "disabled:cursor-not-allowed disabled:opacity-45",
-        SIZES[size],
-        VARIANTS[variant],
-        className,
-      )}
+      className={buttonClasses(variant, size, className)}
     />
   );
+}
+
+/**
+ * Same skin, anchor semantics — for CTAs that navigate (the hero's
+ * "Build your deck" is an anchor to #modules, not an action). Keeping it
+ * a separate component rather than giving Button an `href` keeps both
+ * prop types honest.
+ */
+export type ButtonLinkProps = {
+  variant?: "primary" | "secondary";
+  size?: "sm" | "md" | "lg";
+} & AnchorHTMLAttributes<HTMLAnchorElement>;
+
+export function ButtonLink({
+  variant = "primary",
+  size = "md",
+  className,
+  ...rest
+}: ButtonLinkProps) {
+  return <a {...rest} className={buttonClasses(variant, size, className)} />;
 }
