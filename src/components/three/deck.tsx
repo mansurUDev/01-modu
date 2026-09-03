@@ -89,7 +89,7 @@ function Led({
 function ModuleDial({ geometries, materials }: ModuleProps) {
   return (
     <group name="module_dial" position={[MODULE_X[0], 0, 0]}>
-      <mesh name="dial_body" geometry={geometries.body} material={materials.body} />
+      <mesh name="dial_body" geometry={geometries.body} material={materials.bodies[0]} />
 
       {/* Each knob sits in its own group centred on the knob axis, so T9 can
           spin cap + notch in place by rotating the group about Y. World
@@ -139,7 +139,7 @@ function ModuleDial({ geometries, materials }: ModuleProps) {
 function ModuleFader({ geometries, materials }: ModuleProps) {
   return (
     <group name="module_fader" position={[MODULE_X[1], 0, 0]}>
-      <mesh name="fader_body" geometry={geometries.body} material={materials.body} />
+      <mesh name="fader_body" geometry={geometries.body} material={materials.bodies[1]} />
 
       <mesh
         name="fader_slot"
@@ -148,7 +148,10 @@ function ModuleFader({ geometries, materials }: ModuleProps) {
         position={[0, MOD_H + 0.0002, 0]}
       />
       {/* Stem + cap travel together along z — T9 drives them via sceneProxy.faderTravel. */}
-      <group name="fader_carriage" position={[0, 0, -0.022]}>
+      {/* -0.0225 is sceneProxy.faderTravel = -0.5 through scroll-rig's
+          FADER_TRAVEL: the modelled rest pose and the animated rest pose
+          are the same point, so nothing slides on first frame. */}
+      <group name="fader_carriage" position={[0, 0, -0.0225]}>
         <mesh
           name="fader_stem"
           geometry={geometries.faderStem}
@@ -191,7 +194,7 @@ function ModuleFader({ geometries, materials }: ModuleProps) {
 function ModuleKeys({ geometries, materials }: ModuleProps) {
   return (
     <group name="module_keys" position={[MODULE_X[2], 0, 0]}>
-      <mesh name="keys_body" geometry={geometries.body} material={materials.body} />
+      <mesh name="keys_body" geometry={geometries.body} material={materials.bodies[2]} />
 
       {[0, 1, 2, 3, 4].map((i) => (
         <mesh
@@ -225,7 +228,7 @@ function ModuleKeys({ geometries, materials }: ModuleProps) {
 function ModuleView({ geometries, materials }: ModuleProps) {
   return (
     <group name="module_view" position={[MODULE_X[3], 0, 0]}>
-      <mesh name="view_body" geometry={geometries.body} material={materials.body} />
+      <mesh name="view_body" geometry={geometries.body} material={materials.bodies[3]} />
 
       <mesh
         name="view_screen"
@@ -234,6 +237,10 @@ function ModuleView({ geometries, materials }: ModuleProps) {
         position={[0, MOD_H + 0.0003, -0.01]}
       />
 
+      {/* The strip starts dark and wakes during story scene 6, so its
+          contents are scaled to nothing rather than hidden — scroll-rig
+          scales them back in, and a scale of 0 has no orientation to
+          recover from. */}
       {[-0.052, -0.028].map((z, i) => (
         <mesh
           key={z}
@@ -242,6 +249,7 @@ function ModuleView({ geometries, materials }: ModuleProps) {
           material={materials.cyan}
           position={[0, MOD_H + 0.0011, z]}
           rotation={[-Math.PI / 2, 0, 0]}
+          scale={0.001}
         />
       ))}
 
@@ -252,6 +260,7 @@ function ModuleView({ geometries, materials }: ModuleProps) {
           geometry={geometries.appIcon}
           material={materials.violet}
           position={[0, MOD_H + 0.0011, z]}
+          scale={0.001}
         />
       ))}
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { addDeckChoreography } from "@/components/story/deck-choreography";
 import { ProgressRail } from "@/components/story/progress-rail";
 import { STORY_SCENES } from "@/components/story/scene-copy";
 import { ButtonLink } from "@/components/ui/button";
@@ -65,7 +66,13 @@ export function Story() {
 
           const master = gsap.timeline({
             scrollTrigger: {
-              trigger: "#story",
+              // The element, not "#story". useGSAP runs this inside a
+              // gsap.context scoped to this section, and a selector string
+              // there is resolved with root.querySelector — which cannot
+              // find the section itself. ScrollTrigger then quietly falls
+              // back to the document, stretching the eight scenes across
+              // the entire page instead of this section.
+              trigger: root.current,
               start: "top top",
               // The section is 900vh and the stage sticks at 100vh, so the
               // travel between these two points is exactly the eight
@@ -127,6 +134,11 @@ export function Story() {
               );
             }
           });
+
+          // The 3D beats ride the same master, on the same percentages, so
+          // the deck and the copy can never drift apart. They only touch
+          // sceneProxy — see story/deck-choreography.ts.
+          addDeckChoreography(master);
 
           // The master must be at least as long as the last label, or GSAP
           // compresses the mapping between scroll and timeline position.

@@ -16,6 +16,10 @@ import * as THREE from "three";
  */
 export type DeckMaterials = {
   body: THREE.MeshStandardMaterial;
+  /** One clone per rail module. The parade dims everything except the
+   *  module in focus, and a shared material cannot be dimmed for some of
+   *  its meshes only. */
+  bodies: THREE.MeshStandardMaterial[];
   alu: THREE.MeshStandardMaterial;
   glass: THREE.MeshStandardMaterial;
   cyan: THREE.MeshStandardMaterial;
@@ -27,12 +31,19 @@ export type DeckMaterials = {
 };
 
 export function createDeckMaterials(): DeckMaterials {
+  const body = new THREE.MeshStandardMaterial({
+    name: "anodized_black",
+    color: 0x0f0f11,
+    roughness: 0.55,
+    metalness: 0.3,
+  });
+
   return {
-    body: new THREE.MeshStandardMaterial({
-      name: "anodized_black",
-      color: 0x0f0f11,
-      roughness: 0.55,
-      metalness: 0.3,
+    body,
+    bodies: Array.from({ length: 4 }, (_, i) => {
+      const clone = body.clone();
+      clone.name = `anodized_black_${i + 1}`;
+      return clone;
     }),
     // Source: roughness 0.32 / metalness 0.4 (no env map). See note above.
     alu: new THREE.MeshStandardMaterial({
@@ -96,7 +107,8 @@ export function createDeckMaterials(): DeckMaterials {
 }
 
 export function disposeDeckMaterials(materials: DeckMaterials): void {
-  for (const material of Object.values(materials)) {
-    material.dispose();
+  for (const entry of Object.values(materials)) {
+    if (Array.isArray(entry)) entry.forEach((material) => material.dispose());
+    else entry.dispose();
   }
 }

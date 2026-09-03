@@ -16,21 +16,35 @@
 export type SceneProxy = {
   /** 0 = deck assembled, 1 = modules fully exploded (story scenes 2 and 8). */
   explode: number;
-  /** 0..1 pogo-pin emissive flash at the moment modules snap together. */
+  /** Pogo-pin emissive intensity — flashes 0 → 2 → 0.4 as modules meet. */
   snapFlash: number;
   /** Extra scale applied to the whole deck — the magnetic "click" pulse. */
   deckPulse: number;
 
-  /** Which module the camera is parked on during the 22–70% parade. */
+  /** Which module the camera is parked on during the 22–84% parade. */
   focus: "none" | "dial" | "fader" | "keys" | "view" | "voice";
-  /** 0 = wide shot, 1 = fully focused on `focus`. Dims the other modules. */
-  focusAmount: number;
 
-  /** Camera rig, in scene units / radians. */
+  /** Camera position, in world units. */
   camX: number;
   camY: number;
   camZ: number;
-  camPolar: number;
+  /** What the camera aims at — the parade needs to look off-centre. */
+  lookX: number;
+  lookY: number;
+  lookZ: number;
+  /**
+   * Composition: how far right of centre the subject sits, as a fraction
+   * of the frustum's half-width at the aim distance. The story copy holds
+   * the left of the stage, so 0 would put the deck straight through the
+   * paragraph. A fraction rather than a world offset because it has to
+   * hold on a 21:9 monitor and a 1280×1024 one alike.
+   */
+  frameShift: number;
+
+  /** Which module is centre stage; the others dim and drop back. */
+  dimOthers: number;
+  /** 0..1 — the whole deck retreating while Voice takes the scene. */
+  deckAway: number;
 
   /** Per-module drivers, all 0..1 unless noted. */
   knobSpin: number;
@@ -39,6 +53,8 @@ export type SceneProxy = {
   keyPress: number;
   screenProgress: number;
   voiceDrop: number;
+  /** 0..1 pulse on Voice's record button and its push-to-talk rings. */
+  voicePulse: number;
 
   /** Idle breathing/drift on the hero shot; killed under reduced-motion. */
   idle: number;
@@ -49,18 +65,24 @@ const INITIAL: SceneProxy = {
   snapFlash: 0,
   deckPulse: 0,
   focus: "none",
-  focusAmount: 0,
   // Must match HERO_CAMERA in canvas-root.tsx — this is the pose the
   // story starts and ends on.
   camX: 1.7,
   camY: 3.0,
   camZ: 3.3,
-  camPolar: 0,
+  lookX: 0,
+  lookY: 0,
+  lookZ: 0,
+  frameShift: 0.24,
+  dimOthers: 0,
+  deckAway: 0,
   knobSpin: 0,
-  faderTravel: 0,
+  // The carriage's modelled rest position; see deck.tsx.
+  faderTravel: -0.5,
   keyPress: 0,
   screenProgress: 0,
   voiceDrop: 0,
+  voicePulse: 0,
   idle: 1,
 };
 

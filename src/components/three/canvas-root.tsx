@@ -1,13 +1,19 @@
 "use client";
 
-import { ContactShadows, Environment, Lightformer } from "@react-three/drei";
-import { Canvas, useFrame } from "@react-three/fiber";
+import {
+  ContactShadows,
+  Environment,
+  Lightformer,
+  Preload,
+} from "@react-three/drei";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { Deck, type DeckResources } from "./deck";
 import { createDeckGeometries, disposeDeckGeometries } from "./geometries";
 import { createDeckMaterials, disposeDeckMaterials } from "./materials";
 import { damp, sceneProxy } from "./scene-proxy";
+import { applyChoreography, collectDeckRefs, type DeckRefs } from "./scroll-rig";
 import { Voice } from "./voice";
 
 /**
@@ -40,6 +46,9 @@ const DECK_Y = -0.17;
  */
 const HERO_CAMERA = { fov: 35, position: [1.7, 3.0, 3.3] as const };
 
+/** Resting opacity of the baked contact shadow. */
+const SHADOW_OPACITY = 0.45;
+
 /** Idle drift on the hero pose: ±3° of yaw over 8s (DESIGN.md Часть B §1). */
 const IDLE_YAW_RAD = THREE.MathUtils.degToRad(3);
 const IDLE_PERIOD_S = 8;
@@ -54,13 +63,52 @@ const IDLE_PERIOD_S = 8;
  * here.
  */
 function CameraRig() {
-  useFrame(({ camera }) => {
-    camera.position.set(
-      damp(camera.position.x, sceneProxy.camX),
-      damp(camera.position.y, sceneProxy.camY),
-      damp(camera.position.z, sceneProxy.camZ),
+  // The aim point is damped as its own vector rather than snapped: during
+  // the module parade the camera swings from one exploded module to the
+  // next, and an undamped lookAt makes that a cut instead of a pan.
+  // The camera's own position is not the damped state: the framing offset
+  // below is re-applied every frame, so damping toward the target from an
+  // already-offset position would let the offset compound. `base` is the
+  // pose; the camera is where the pose lands after composition.
+  const base = useRef(
+    new THREE.Vector3(HERO_CAMERA.position[0], HERO_CAMERA.position[1], HERO_CAMERA.position[2]),
+  );
+  const aim = useRef(new THREE.Vector3(0, 0, 0));
+  const shift = useRef(sceneProxy.frameShift);
+  const offset = useRef(new THREE.Vector3());
+  const target = useRef(new THREE.Vector3());
+
+  useFrame(({ camera, size }) => {
+    base.current.set(
+      damp(base.current.x, sceneProxy.camX),
+      damp(base.current.y, sceneProxy.camY),
+      damp(base.current.z, sceneProxy.camZ),
     );
-    camera.lookAt(0, 0, 0);
+    aim.current.set(
+      damp(aim.current.x, sceneProxy.lookX),
+      damp(aim.current.y, sceneProxy.lookY),
+      damp(aim.current.z, sceneProxy.lookZ),
+    );
+    shift.current = damp(shift.current, sceneProxy.frameShift);
+
+    camera.position.copy(base.current);
+    camera.lookAt(aim.current);
+
+    // Slide the whole frustum left along the camera's own right axis, which
+    // pushes the subject the same distance right on screen. The amount is a
+    // fraction of the half-width actually visible at the aim distance, so
+    // the composition holds on any viewport and at any camera distance.
+    const fov = (camera as THREE.PerspectiveCamera).fov ?? HERO_CAMERA.fov;
+    const halfWidth =
+      base.current.distanceTo(aim.current) *
+      Math.tan(THREE.MathUtils.degToRad(fov) / 2) *
+      (size.width / size.height);
+
+    offset.current
+      .setFromMatrixColumn(camera.matrix, 0)
+      .multiplyScalar(-shift.current * halfWidth);
+    camera.position.add(offset.current);
+    camera.lookAt(target.current.copy(aim.current).add(offset.current));
   });
 
   return null;
@@ -68,18 +116,25 @@ function CameraRig() {
 
 function DeckRig({ geometries, materials }: DeckResources) {
   const group = useRef<THREE.Group>(null);
+  const refs = useRef<DeckRefs | null>(null);
 
   useFrame((state) => {
     if (!group.current) return;
+    // Collected on the first frame rather than in an effect: by then every
+    // child mesh has mounted and none of them has been moved yet, so the
+    // positions captured here are the true rest pose.
+    refs.current ??= collectDeckRefs(group.current);
+
     const t = state.clock.elapsedTime;
     const targetYaw =
       Math.sin((t / IDLE_PERIOD_S) * Math.PI * 2) *
       IDLE_YAW_RAD *
       sceneProxy.idle;
-    // Everything the story drives goes through sceneProxy and gets damped
-    // here — never tweened onto the meshes directly. T9 adds explode,
-    // focus, camera and per-module drivers alongside this drift.
+    // Everything the story drives goes through sceneProxy and is damped
+    // here — never tweened onto the meshes directly.
     group.current.rotation.y = damp(group.current.rotation.y, targetYaw);
+
+    applyChoreography(refs.current, t);
   });
 
   return (
@@ -88,6 +143,82 @@ function DeckRig({ geometries, materials }: DeckResources) {
       <Voice geometries={geometries} materials={materials} />
     </group>
   );
+}
+
+/**
+ * The grounding shadow is baked once (`frames={1}`), so it cannot follow
+ * the modules once they scatter — it would sit under the scene as a hard
+ * deck-shaped smudge with nothing above it. Fading it out while the deck
+ * is exploded or pushed back is cheaper and more honest than re-baking.
+ */
+function GroundShadow() {
+  const group = useRef<THREE.Group>(null);
+
+  useFrame(() => {
+    if (!group.current) return;
+    const target =
+      SHADOW_OPACITY * (1 - sceneProxy.explode) * (1 - sceneProxy.deckAway);
+    group.current.traverse((object) => {
+      const material = (object as THREE.Mesh).material;
+      if (material && !Array.isArray(material) && "opacity" in material) {
+        material.opacity = damp(material.opacity, target, 0.15);
+      }
+    });
+  });
+
+  return (
+    <group ref={group}>
+      <ContactShadows
+        position={[0, DECK_Y - 0.002, 0]}
+        scale={6}
+        far={1.2}
+        blur={2.5}
+        opacity={SHADOW_OPACITY}
+        frames={1}
+      />
+    </group>
+  );
+}
+
+/**
+ * Runs the render loop only while the 3D scene can actually be seen.
+ *
+ * The canvas is `fixed`, so it stays mounted for the whole page, but from
+ * the catalogue down it is covered by an opaque block — REVIEW.md §1 asks
+ * for the GPU to sleep there. A plain IntersectionObserver on the hero and
+ * the story does the job without another ScrollTrigger to keep in sync,
+ * and `invalidate()` on the way out renders one last frame so the scene
+ * does not freeze mid-transition.
+ */
+function FrameloopRig() {
+  const setFrameloop = useThree((state) => state.setFrameloop);
+  const invalidate = useThree((state) => state.invalidate);
+
+  useEffect(() => {
+    const targets = ["#top", "#story"]
+      .map((selector) => document.querySelector(selector))
+      .filter((element): element is Element => element !== null);
+    if (targets.length === 0) return;
+
+    const visible = new Set<Element>();
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) visible.add(entry.target);
+        else visible.delete(entry.target);
+      }
+      if (visible.size > 0) {
+        setFrameloop("always");
+      } else {
+        setFrameloop("demand");
+        invalidate();
+      }
+    });
+
+    targets.forEach((target) => observer.observe(target));
+    return () => observer.disconnect();
+  }, [invalidate, setFrameloop]);
+
+  return null;
 }
 
 function Scene() {
@@ -143,20 +274,18 @@ function Scene() {
         />
       </Environment>
 
+      {/* Voice spends the first seventy percent of the story hidden, so its
+          geometry and shaders would otherwise upload on the single frame it
+          appears — a measured 160ms stall in the middle of a scrub. Preload
+          pays that cost once, during the hero. */}
+      <Preload all />
+
+      <FrameloopRig />
       <CameraRig />
       <DeckRig {...resources} />
 
-      {/* Grounding shadow only — no shadow maps anywhere in this scene.
-          frames={1} bakes it once; T9 fades its opacity out while the deck
-          is exploded, since a single baked pass cannot follow the pieces. */}
-      <ContactShadows
-        position={[0, DECK_Y - 0.002, 0]}
-        scale={6}
-        far={1.2}
-        blur={2.5}
-        opacity={0.45}
-        frames={1}
-      />
+      {/* Grounding shadow only — no shadow maps anywhere in this scene. */}
+      <GroundShadow />
     </>
   );
 }
@@ -169,9 +298,9 @@ export default function CanvasRoot() {
       gl={{ alpha: true }}
       dpr={[1, 2]}
       camera={HERO_CAMERA}
-      // T3 keeps the loop running so the idle drift is visible. T9 flips
-      // this to 'always' only while the story is in view and 'demand'
-      // everywhere else (REVIEW.md §1), so the GPU sleeps on other routes.
+      // Starts running so the hero's idle drift is there on first paint;
+      // FrameloopRig drops it to 'demand' as soon as the hero and story
+      // are both off screen.
       frameloop="always"
     >
       <Scene />
