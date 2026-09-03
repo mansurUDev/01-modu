@@ -1,0 +1,41 @@
+:root {
+  /* Surfaces — 90% of every layout */
+  --bg-base: #0A0A0B;
+  --bg-deep: #060607;
+  --surface-raised: #111113;
+  --surface-card: #141416;
+  --surface-input: #101012;
+
+  /* Strokes */
+  --stroke-hairline: rgba(255, 255, 255, 0.06);
+  --stroke-strong: rgba(255, 255, 255, 0.12);
+  --stroke-edge: rgba(255, 255, 255, 0.14); /* 1px top inset "machined edge" */
+
+  /* Text */
+  --text-heading: #F2F1EE;
+  --text-body: #A3A3AA;
+  --text-muted: #62626A;
+
+  /* Accent — the ONLY accent. 2% of any layout. */
+  --accent: #FF4A1F;
+  --accent-hover: #FF6A3D;
+  --accent-pressed: #E03A0F;
+  --accent-glow: rgba(255, 74, 31, 0.35);
+  --on-accent: #0A0A0B; /* text on accent is dark, never white */
+  --accent-tint: rgba(255, 74, 31, 0.12);
+
+  /* Product light details */
+  --led: #DCE9FF;
+  --led-glow: rgba(220, 233, 255, 0.45);
+
+  /* On-screen UI colors (device displays, data viz) */
+  --ui-cyan: #38D6F5;
+  --ui-violet: #8F7BFF;
+  --ui-green: #3EDC97;
+
+  /* Semantic */
+  --error: #FF5C5C;
+
+  /* Backgrounds */
+  --vignette: radial-gradient(ellipse 90% 75% at 50% 38%, #111113 0%, #0A0A0B 80%);
+}

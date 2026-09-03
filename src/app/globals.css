@@ -1,0 +1,154 @@
+@import "tailwindcss";
+
+/* Raw design tokens, imported as-is from design-system/tokens/ (see
+   ../../design-system/readme.md and ../../REVIEW.md §1 "Палитра").
+   These stay available as plain `var(--bg-base)` etc. for arbitrary-value
+   Tailwind classes (e.g. `bg-[var(--vignette)]`) and for ported
+   design-system components. They are DELIBERATELY not re-exposed under the
+   exact same names inside the @theme block below — see the comment there. */
+@import "../styles/tokens/colors.css";
+@import "../styles/tokens/spacing.css";
+@import "../styles/tokens/shape.css";
+
+/* Anti-FOUC (TZ.md §10 / REVIEW.md §1 "Палитра" — text color corrected to
+   #F2F1EE, the TZ.md snippet has a stale #F5F5F4).  This must be the very
+   first real CSS below the mandatory `@import "tailwindcss"` line — dark is
+   the ONLY theme this site has, so we paint <html> before anything else can
+   flash white. */
+html {
+  background-color: #0a0a0b;
+  color-scheme: dark;
+}
+
+body {
+  background-color: #0a0a0b;
+  color: #f2f1ee;
+}
+
+@theme inline {
+  /* Fonts: sourced from next/font variables (app/fonts.ts), NOT from
+     tokens/typography.css. That file defines `--font-display` etc. at
+     :root — the exact same names Tailwind's `--font-*` theme namespace
+     would need here. Referencing tokens/typography.css's `--font-display`
+     as `--font-display: var(--font-display)` inside @theme would be a
+     self-reference (both resolve to the same global custom property name)
+     and silently produce an invalid/empty value. Using differently-named
+     next/font variables avoids that entirely. */
+  --font-display: var(--font-space-grotesk);
+  --font-body: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
+
+  /* Colors: re-exposed under NEW theme key names (background/card/heading/
+     accent/...) that don't collide with the raw --bg-base/--surface-card/
+     --text-heading/... names from tokens/colors.css, so these `var()`
+     reads are safe plain references, not self-referential. Generates
+     utilities like bg-card, text-heading, border-accent, etc. */
+  --color-background: var(--bg-base);
+  --color-background-deep: var(--bg-deep);
+  --color-raised: var(--surface-raised);
+  --color-card: var(--surface-card);
+  --color-input: var(--surface-input);
+
+  --color-heading: var(--text-heading);
+  --color-body: var(--text-body);
+  --color-muted: var(--text-muted);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-pressed: var(--accent-pressed);
+  --color-on-accent: var(--on-accent);
+  --color-accent-tint: var(--accent-tint);
+
+  --color-led: var(--led);
+  --color-ui-cyan: var(--ui-cyan);
+  --color-ui-violet: var(--ui-violet);
+  --color-ui-green: var(--ui-green);
+
+  --color-error: var(--error);
+
+  --color-stroke: var(--stroke-hairline);
+  --color-stroke-strong: var(--stroke-strong);
+  --color-stroke-edge: var(--stroke-edge);
+
+  /* Radii: Tailwind's `--radius-*` theme namespace is the EXACT same name
+     as tokens/shape.css's raw `--radius-sm/md/lg/xl`. Unlike the colors
+     above, there is no differently-named alias to fall back on here, so
+     referencing var(--radius-sm) from inside @theme would self-reference
+     and break (same failure mode as the font case above). These 4 values
+     are therefore duplicated literally from tokens/shape.css — keep the
+     two in sync if the design system's radii ever change. */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+
+  /* Composite type styles (Tailwind v4's paired --text-NAME and
+     --text-NAME--line-height variables) — baseline static sizes from
+     design-system/tokens/typography.css.
+     DESIGN.md §2 defines a fluid clamp() scale for the same styles; T5
+     (landing sections) should upgrade these to clamp() when it needs the
+     responsive hero/H2 sizes. These are enough for now to keep text
+     legible on the T1 placeholder pages. */
+  --text-display: 56px;
+  --text-display--line-height: 1.05;
+  --text-display--font-weight: 700;
+  --text-display--letter-spacing: -0.02em;
+
+  --text-h1: 40px;
+  --text-h1--line-height: 1.1;
+  --text-h1--font-weight: 700;
+  --text-h1--letter-spacing: -0.02em;
+
+  --text-h2: 28px;
+  --text-h2--line-height: 1.15;
+  --text-h2--font-weight: 600;
+  --text-h2--letter-spacing: -0.02em;
+
+  --text-h3: 20px;
+  --text-h3--line-height: 1.25;
+  --text-h3--font-weight: 600;
+
+  --text-mono-label: 11px;
+  --text-mono-label--line-height: 1.4;
+  --text-mono-label--font-weight: 500;
+  --text-mono-label--letter-spacing: 0.12em;
+
+  --text-mono-price: 15px;
+  --text-mono-price--line-height: 1.4;
+  --text-mono-price--font-weight: 500;
+}
+
+/* Ported from design-system/tokens/base.css into Tailwind's base layer so
+   it composes with (rather than fights) Preflight's own element resets —
+   see REVIEW.md's design-system audit ("base.css vs Tailwind Preflight"). */
+@layer base {
+  body {
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    color: var(--color-heading);
+    font-family: var(--font-display);
+    letter-spacing: var(--text-h1--letter-spacing);
+  }
+
+  a {
+    color: var(--color-heading);
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--color-accent-hover);
+  }
+
+  ::selection {
+    background: var(--color-accent-tint);
+    color: var(--color-heading);
+  }
+}
