@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="MODU">
+  <!-- The rail, read end-on: four modules side by side, the last one the
+       brand accent. A wordmark is illegible at 16px; four bars are not. -->
+  <rect width="64" height="64" rx="14" fill="#0A0A0B"/>
+  <g>
+    <rect x="10" y="16" width="8" height="32" rx="3" fill="#E8E6E1"/>
+    <rect x="22" y="16" width="8" height="32" rx="3" fill="#E8E6E1"/>
+    <rect x="34" y="16" width="8" height="32" rx="3" fill="#E8E6E1"/>
+    <rect x="46" y="16" width="8" height="32" rx="3" fill="#FF4A1F"/>
+  </g>
+</svg>

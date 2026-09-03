@@ -17,6 +17,12 @@ export type StoryScene = {
   until: number;
   heading: string;
   body: string;
+  /**
+   * The still that stands in for this scene where the live deck does not
+   * run — a frame captured from the real 3D scene at this scene's own
+   * pose. `name` is the file stem in public/posters/.
+   */
+  poster: { name: string; alt: string };
   /** Only the finale carries a call to action. */
   cta?: { label: string; href: string };
 };
@@ -28,6 +34,10 @@ export const STORY_SCENES: readonly StoryScene[] = [
     until: 10,
     heading: "Meet MODU.",
     body: "One deck on your desk. It runs your apps, your calls, your music.",
+    poster: {
+      name: "hero",
+      alt: "The four MODU modules joined into one deck: three dials, a fader, five keys and a touch strip.",
+    },
   },
   {
     id: "apart",
@@ -35,6 +45,10 @@ export const STORY_SCENES: readonly StoryScene[] = [
     until: 22,
     heading: "It comes apart.",
     body: "Every module is a tool of its own. Magnets hold them together. Pogo pins carry the signal.",
+    poster: {
+      name: "scene-2-apart",
+      alt: "The same four modules floating apart, each one a separate aluminum block.",
+    },
   },
   {
     id: "turn",
@@ -42,6 +56,10 @@ export const STORY_SCENES: readonly StoryScene[] = [
     until: 34,
     heading: "Turn things.",
     body: "Three machined dials. Volume, brush size, timeline — you decide. Each click feels like it should.",
+    poster: {
+      name: "scene-3-turn",
+      alt: "The dial module in close-up, its three machined aluminum knobs turned to different positions.",
+    },
   },
   {
     id: "slide",
@@ -49,6 +67,10 @@ export const STORY_SCENES: readonly StoryScene[] = [
     until: 46,
     heading: "Slide things.",
     body: "A motorized fader that moves on its own. Switch apps and it jumps to the right value. Touch it and it obeys you.",
+    poster: {
+      name: "scene-4-slide",
+      alt: "The fader module in close-up, its cap partway along the milled slot.",
+    },
   },
   {
     id: "press",
@@ -56,6 +78,10 @@ export const STORY_SCENES: readonly StoryScene[] = [
     until: 58,
     heading: "Press things.",
     body: "Five keys for the actions you repeat all day. One has a tiny screen, so it always tells you what it does.",
+    poster: {
+      name: "scene-5-press",
+      alt: "The key module in close-up, five aluminum keys in a row with one pressed down.",
+    },
   },
   {
     id: "see",
@@ -63,6 +89,10 @@ export const STORY_SCENES: readonly StoryScene[] = [
     until: 70,
     heading: "See things.",
     body: "A touch strip with your levels, your clock, your calls. Glance down instead of alt-tabbing.",
+    poster: {
+      name: "scene-6-see",
+      alt: "The screen module lit up, showing cyan level rings and violet app icons on black glass.",
+    },
   },
   {
     id: "voice",
@@ -70,6 +100,10 @@ export const STORY_SCENES: readonly StoryScene[] = [
     until: 84,
     heading: "Take one with you.",
     body: "Voice is the module that left the desk. Push to talk, mute the room, end the call. From the couch.",
+    poster: {
+      name: "scene-7-voice",
+      alt: "MODU Voice, the handheld module: one large dial, a record button and four keys.",
+    },
   },
   {
     id: "snap",
@@ -77,6 +111,10 @@ export const STORY_SCENES: readonly StoryScene[] = [
     until: 100,
     heading: "Snap. Done.",
     body: "No screws. No setup screens. Arrange them your way — the deck is ready when it clicks.",
+    poster: {
+      name: "scene-8-snap",
+      alt: "The deck reassembled with its screen awake, the whole rail lit and ready.",
+    },
     cta: { label: "Build your deck", href: "#modules" },
   },
 ] as const;

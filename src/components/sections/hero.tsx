@@ -1,3 +1,4 @@
+import { Poster } from "@/components/poster";
 import { ButtonLink } from "@/components/ui/button";
 import { Container } from "./section-shell";
 
@@ -7,9 +8,9 @@ import { Container } from "./section-shell";
  * that DESIGN.md §7.2 still carries (REVIEW.md §1 retired it).
  *
  * The live 3D deck is a fixed canvas painted behind everything (rendered
- * once in page.tsx), so this section only owns type and CTAs. The bottom
- * padding leaves the deck a clear band to sit in; T10 drops a static
- * poster into the same space for phones and reduced-motion.
+ * once in page.tsx), so this section owns type, CTAs — and the still that
+ * takes the deck's place for phones and reduced motion. The bottom padding
+ * leaves the live deck a clear band to sit in.
  */
 export function Hero() {
   return (
@@ -41,6 +42,15 @@ export function Hero() {
             See how it works
           </ButtonLink>
         </div>
+
+        {/* Where the live canvas does not run, the product still has to be
+            on the first screen. Same gate as the story's stacked fallback,
+            so a visitor gets exactly one of the two. */}
+        <Poster
+          name="hero"
+          alt="The MODU deck: three machined dials, a motorized fader, five keys and a touch strip, joined into one aluminum rail."
+          className="mt-6 max-w-[560px] lg:motion-safe:hidden"
+        />
 
         <p className="mt-8 font-mono text-mono-label uppercase text-muted">
           Scroll to take it apart

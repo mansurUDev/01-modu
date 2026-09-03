@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { Poster } from "@/components/poster";
 import { addDeckChoreography } from "@/components/story/deck-choreography";
 import { ProgressRail } from "@/components/story/progress-rail";
 import { STORY_SCENES } from "@/components/story/scene-copy";
@@ -185,6 +186,16 @@ export function Story() {
                   i > 0 ? "lg:motion-safe:opacity-0" : ""
                 }`}
               >
+                {/* The still of this scene's 3D pose, for everyone the
+                    live deck skips. Hidden on exactly the condition that
+                    turns the pin on, so the two can never both appear —
+                    and, being lazy, never fetched there either. */}
+                <Poster
+                  name={scene.poster.name}
+                  alt={scene.poster.alt}
+                  className="mb-2 lg:motion-safe:hidden"
+                />
+
                 <h2 className="font-display text-h2 tracking-[-0.02em] text-heading">
                   {scene.heading}
                 </h2>
