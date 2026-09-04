@@ -5,7 +5,7 @@ scroll-driven scenes take a 3D deck apart, walk through each module, and
 snap it back together; a working cart, sign-in gate and checkout sit under
 it. Static export, no backend, no external requests at runtime.
 
-**Live:** _deploying — see T12_
+**Live:** https://01-modu.vercel.app/
 
 ![The MODU hero: the deck rendered live in WebGL behind the headline](docs/01-hero.webp)
 
